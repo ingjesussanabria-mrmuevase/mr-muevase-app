@@ -1,0 +1,17 @@
+{
+  "name": "Mr. Muévase — Felicidad = Progreso",
+  "short_name": "Mr. Muévase",
+  "description": "La comunidad más grande del mundo para transformar tu vida, bajar de peso y ser feliz a través de Fisiología, Enfoque y Lenguaje.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#fff9f2",
+  "theme_color": "#f25c22",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "./logo-muevase.webp",
+      "sizes": "512x512",
+      "type": "image/webp"
+    }
+  ]
+}
