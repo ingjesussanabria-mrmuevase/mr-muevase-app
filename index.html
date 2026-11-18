@@ -1,0 +1,1449 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mr. Muévase RPG | El Juego de tu Nueva Vida</title>
+  <meta name="description" content="Comunidad Mr. Muévase por Jesús Sanabria. El videojuego de la vida real para vencer la obesidad y ser feliz con Fisiología, Enfoque y Lenguaje." />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#F25C22" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- CAPA DE EFECTOS DE VIDEOJUEGO (CONFETI Y PUNTOS +XP FLOTANTES) -->
+  <div id="celebration-fx-layer" class="celebration-fx-layer" aria-hidden="true"></div>
+
+  <!-- MODAL DE REGISTRO / CREACIÓN DE TU PERSONAJE -->
+  <div id="auth-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="auth-title">
+    <div class="modal-card auth-card">
+      <div class="auth-header-brand">
+        <img src="logo-muevase.webp" alt="Logo Mr. Muévase" class="auth-logo-img" />
+        <div>
+          <div class="auth-badge">🎮 EL JUEGO DE LA VIDA REAL • MR. MUÉVASE</div>
+          <h1 id="auth-title">¡Crea tu Héroe y Empieza tu Nueva Vida!</h1>
+        </div>
+      </div>
+
+      <p class="auth-subtitle">
+        Creado por <strong>Jesús Sanabria (-48 kg en 2026)</strong>. Convierte tu proceso de bajar de peso y ser feliz en un videojuego diario donde cada buen hábito te da <strong>XP, Monedas y Victorias reales</strong>.
+      </p>
+      <div class="auth-quote">
+        “Regla #1 del Juego: <strong>FELICIDAD = PROGRESO</strong>. Cada pequeño check en tus 3 Pilares recarga tu Pila de Felicidad y derrota a los monstruos de la apatía y el azúcar.”
+      </div>
+
+      <form id="register-form" class="auth-form">
+        <div class="form-group">
+          <label for="reg-name">Nombre de tu Héroe (Tu Nombre Completo) *</label>
+          <input type="text" id="reg-name" required placeholder="Ej. María González / Juan Pérez" />
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="reg-email">Correo Electrónico *</label>
+            <input type="email" id="reg-email" required placeholder="tucorreo@ejemplo.com" />
+          </div>
+          <div class="form-group">
+            <label for="reg-phone">Teléfono / WhatsApp *</label>
+            <input type="tel" id="reg-phone" required placeholder="+52 55 1234 5678" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="reg-profile">Elige tu Clase / Punto de Partida</label>
+            <select id="reg-profile">
+              <option value="Obesidad Grado I">🛡️ Guerrero Grado I — ¡Listo para mi cambio!</option>
+              <option value="Obesidad Grado II">⚔️ Titán Grado II — ¡Paso a paso lo lograré!</option>
+              <option value="Obesidad Grado III">👑 Leyenda Grado III — ¡Empiezo mi transformación!</option>
+              <option value="Sobrepeso y Hábitos">⚡ Explorador — Quiero recuperar mi salud y energía</option>
+              <option value="Quiero Ser Feliz">🌟 Buscador de Felicidad — ¡Quiero plenitud y comunidad!</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="reg-goal-kg">¿Cuál es tu Gran Misión (Meta de Peso / Vida)?</label>
+            <input type="text" id="reg-goal-kg" placeholder="Ej. Bajar 25 kg y correr con mis hijos" />
+          </div>
+        </div>
+
+        <button type="submit" class="btn-primary btn-large">
+          🎮 ¡Presionar START y Entrar al Juego!
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- BANNER INTELIGENTE DE RECORDATORIO CUANDO LA PILA ESTÁ BAJA -->
+  <div id="low-battery-banner" class="battery-alert-banner hidden">
+    <div class="battery-alert-content">
+      <span class="alert-pulse">🚨</span>
+      <div>
+        <strong id="battery-alert-title">¡Alerta de Energía! Tu Pila de Felicidad está en Rojo hoy</strong>
+        <p id="battery-alert-desc">En este juego ganas avanzando con pasos de bebé. Haz 1 combo rápido o gira la Ruleta de Misión para subir tu nivel.</p>
+      </div>
+    </div>
+    <div class="battery-alert-actions">
+      <button type="button" id="btn-quick-boost" class="btn-boost">⚡ Combo Recarga Rápida (+75 XP)</button>
+      <button type="button" id="btn-enable-reminders" class="btn-outline-sm">🔔 Activar Alertas</button>
+    </div>
+  </div>
+
+  <!-- BARRA SUPERIOR CON HUD DE VIDEOJUEGO (XP, MONEDAS, RACHA, SONIDO) -->
+  <header class="topbar">
+    <div class="topbar-brand">
+      <img src="logo-muevase.webp" alt="Mr. Muévase Logo" class="topbar-logo" />
+      <div>
+        <div class="brand-title">Mr. Muévase <span class="brand-tag">RPG de Vida Real</span></div>
+        <div class="user-greeting" id="user-greeting-bar">Cargando jugador...</div>
+      </div>
+    </div>
+
+    <nav class="main-nav" aria-label="Navegación principal">
+      <button type="button" class="nav-tab active" data-tab="dashboard">
+        <span>🎮</span> Misión de Hoy (3 Pilares)
+      </button>
+      <button type="button" class="nav-tab" data-tab="arcade">
+        <span>🏆</span> Mapa, Trofeos & Premios
+      </button>
+      <button type="button" class="nav-tab" data-tab="blog">
+        <span>🌎</span> Blog & Comunidad <span id="blog-count-badge" class="nav-badge">4</span>
+      </button>
+      <button type="button" class="nav-tab" data-tab="history">
+        <span>📊</span> Inventario Semanal
+      </button>
+    </nav>
+
+    <div class="topbar-actions">
+      <div class="hud-stat-pill xp-pill" title="Puntos de Experiencia acumulados">
+        ⭐ <strong id="hud-xp-value">0</strong> XP
+      </div>
+      <div class="hud-stat-pill coins-pill" title="Monedas Muévase ganadas con tus hábitos">
+        🪙 <strong id="hud-coins-value">50</strong>
+      </div>
+      <div class="streak-pill" title="Racha de días seguidos jugando">
+        🔥 <span id="streak-count">1</span>d
+      </div>
+      <button type="button" id="btn-toggle-sound" class="btn-icon" title="Activar/Desactivar sonidos de videojuego">
+        🔊 Sonido
+      </button>
+      <button type="button" id="btn-edit-profile" class="btn-icon" title="Ver o editar mi Héroe">
+        👤 Héroe
+      </button>
+    </div>
+  </header>
+
+  <main class="app-container">
+    <!-- ==========================================
+         VISTA 1: TABLERO PRINCIPAL + ARENA RPG
+         ========================================== -->
+    <section id="tab-dashboard" class="tab-view active">
+
+      <!-- =================================================================
+           NUEVA BARRA INTERACTIVA DE VIDEOJUEGO: AVATAR + JEFE DEL DÍA + RULETA
+           ================================================================= -->
+      <section class="rpg-arena-banner card">
+        <div class="rpg-arena-grid">
+          <!-- 1. TU AVATAR EVOLUCIONABLE -->
+          <div class="rpg-hero-box">
+            <div class="avatar-stage" id="hero-avatar-stage">
+              <div class="avatar-aura" id="hero-avatar-aura"></div>
+              <div class="avatar-emoji" id="hero-avatar-emoji">🚶‍♂️</div>
+              <span class="avatar-level-chip" id="hero-level-chip">NIVEL 1</span>
+            </div>
+            <div class="hero-stats-info">
+              <div class="hero-rank-title" id="user-level-badge">🌱 Aprendiz en Movimiento</div>
+              <p class="hero-status-msg" id="hero-status-msg">¡Marca checks abajo para evolucionar tu Avatar hoy!</p>
+              <div class="xp-progress-bar-wrap">
+                <div class="xp-progress-bar-fill" id="xp-bar-fill" style="width: 20%"></div>
+              </div>
+              <div class="xp-progress-labels">
+                <span id="xp-current-level-text">Progreso de Nivel</span>
+                <span id="xp-next-level-text">Siguiente rango: 300 XP</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. BATALLA CONTRA EL JEFE FINAL DEL DÍA (BOSS BATTLE) -->
+          <div class="rpg-boss-box" id="rpg-boss-box">
+            <div class="boss-header-row">
+              <span class="boss-tag">⚔️ BATALLA DIARIA EN VIVO</span>
+              <button type="button" id="btn-change-boss" class="btn-ghost-xs" title="Cambiar enemigo del día">🔄 Cambiar Jefe</button>
+            </div>
+            <div class="boss-Main-row">
+              <div class="boss-avatar-wrap" id="boss-avatar-wrap">
+                <span id="boss-emoji">👹</span>
+              </div>
+              <div class="boss-info">
+                <h3 id="boss-name-title">El Monstruo del Azúcar y la Excusa</h3>
+                <p id="boss-taunt-text">“¡Cada vez que haces un hábito de Fisiología, Enfoque o Lenguaje me quitas vida!”</p>
+                <div class="boss-hp-bar-outer">
+                  <div class="boss-hp-bar-inner" id="boss-hp-fill" style="width: 100%"></div>
+                  <span class="boss-hp-text" id="boss-hp-label">HP del Jefe: 100%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. MINI-JUEGO: RULETA DE MISIÓN RELÁMPAGO DE 60 SEGUNDOS -->
+          <div class="rpg-quest-roulette-box">
+            <div class="roulette-top">
+              <span class="pill-tag tag-turquoise">🎲 MINI-JUEGO EN VIVO</span>
+              <span class="reward-tag">+50 XP • +20 🪙</span>
+            </div>
+            <h3>Misión Relámpago (60 seg)</h3>
+            <div id="roulette-quest-display" class="roulette-quest-display">
+              ¿Necesitas dopamina y energía ya? ¡Gira el dado para recibir un reto físico o mental de 60 segundos!
+            </div>
+            <div class="roulette-actions">
+              <button type="button" id="btn-spin-quest" class="btn-roulette-spin">
+                🎲 Girar Dado de Misión
+              </button>
+              <button type="button" id="btn-complete-quest" class="btn-roulette-claim hidden">
+                🏆 ¡Cumplida! Reclamar +50 XP (<span id="quest-timer-sec">60s</span>)
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PARTE SUPERIOR DEL BOCETO: ESPEJO DEL FUTURO (IZQ) + FELICIDAD=PROGRESO (CENTRO) + PILA R-R-R-A-A-A-V-V-V (DER) -->
+      <div class="sketch-top-grid">
+        
+        <!-- SUPERIOR IZQUIERDA: FOTO Y ESPEJO DE VISUALIZACIÓN DEL FUTURO -->
+        <article class="card future-mirror-card">
+          <div class="card-header-row">
+            <div>
+              <span class="pill-tag tag-turquoise">✨ ENFOQUE Y VISUALIZACIÓN</span>
+              <h2>Mi Foto y Espejo del Futuro</h2>
+            </div>
+            <button type="button" id="btn-open-vision-ritual" class="btn-ghost-sm" title="Ritual de visualización de 30 segundos">
+              👁️ Ritual 30s (+30 XP)
+            </button>
+          </div>
+          <p class="card-helper">
+            Sube tu foto para recordar tu compromiso y construye tu <strong>Espejo del Futuro</strong>: cómo te ves, cuántos kilos dejaste atrás y cómo te sientes siendo delgado y feliz.
+          </p>
+
+          <div class="mirror-Comparison-grid">
+            <div class="photo-box current-photo-box">
+              <div class="photo-label">📸 MI FOTO COMPROMISO</div>
+              <div id="current-photo-preview" class="photo-frame">
+                <div class="photo-placeholder">
+                  <span class="placeholder-icon">📷</span>
+                  <span>Sube tu foto favorita</span>
+                </div>
+              </div>
+              <label for="input-photo-upload" class="btn-upload">
+                📤 Subir / Cambiar Foto
+              </label>
+              <input type="file" id="input-photo-upload" accept="image/*" class="sr-only" />
+            </div>
+
+            <div class="mirror-arrow">
+              <span>➔</span>
+              <small>META</small>
+            </div>
+
+            <div class="photo-box future-photo-box">
+              <div class="photo-label future-label">🌟 ESPEJO DE MI YO DEL FUTURO</div>
+              <div class="future-vision-board" id="future-vision-board">
+                <div class="vision-target-weight" id="vision-card-weight-badge">🎯 Meta: -25 kg • Delgado y Feliz</div>
+                <p class="vision-card-quote" id="vision-card-quote-text">
+                  “Me veo frente al espejo con mi ropa favorita, ligero, lleno de energía, con pecho orgulloso y una sonrisa de victoria.”
+                </p>
+                <div class="vision-tags-mini" id="vision-card-tags">
+                  <span>✨ Delgado y Ligero</span>
+                  <span>😁 Sonrisa de Orgullo</span>
+                </div>
+              </div>
+              <button type="button" id="btn-visualize-check" class="btn-ai-magic">
+                🙌 ¡Hoy ya me visualicé logrando mi meta! (+25 XP)
+              </button>
+            </div>
+          </div>
+
+          <div class="vision-customizer-box">
+            <div class="vision-inputs-row">
+              <div>
+                <label for="vision-kg-input">🎯 Mi Meta Física (Peso / Talla):</label>
+                <input type="text" id="vision-kg-input" placeholder="Ej. -30 kg / Talla M / Sin fatiga" value="Meta: -25 kg • Delgado y Feliz" />
+              </div>
+              <div>
+                <label for="future-vision-input">🌟 ¿Cómo me veo y me siento en el futuro?</label>
+                <input type="text" id="future-vision-input" placeholder="Ej. Caminando ligero, jugando con mis hijos y orgulloso..." />
+              </div>
+            </div>
+            <div class="vision-traits-selector">
+              <span>Elige tus poderes en el Espejo del Futuro:</span>
+              <div class="trait-chips-row" id="vision-trait-chips">
+                <button type="button" class="trait-chip active" data-trait="✨ Delgado y Ligero">✨ Delgado y Ligero</button>
+                <button type="button" class="trait-chip active" data-trait="😁 Sonrisa de Orgullo">😁 Sonrisa de Orgullo</button>
+                <button type="button" class="trait-chip" data-trait="⚡ Lleno de Energía">⚡ Lleno de Energía</button>
+                <button type="button" class="trait-chip" data-trait="🏃‍♂️ Ágil y Fuerte">🏃‍♂️ Ágil y Fuerte</button>
+                <button type="button" class="trait-chip" data-trait="🕊️ En Paz y Feliz">🕊️ En Paz y Feliz</button>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- CENTRO SUPERIOR: LEMA FELICIDAD = PROGRESO -->
+        <article class="card centerpiece-card">
+          <div class="centerpiece-logo-wrap">
+            <img src="logo-muevase.webp" alt="Muévase" class="centerpiece-logo" />
+          </div>
+          <div class="centerpiece-circle">
+            <span class="centerpiece-eyebrow">EL CORAZÓN DE MR. MUÉVASE</span>
+            <h2 class="centerpiece-equation">Felicidad = Progreso</h2>
+            <p class="centerpiece-sub">
+              Cada check que marcas abajo es un <strong>ataque directo contra tus viejos patrones</strong> y recarga tu Pila de Felicidad.
+            </p>
+          </div>
+
+          <div class="sketch-arrows-diagram">
+            <div class="sketch-pillar-node">
+              <strong>Fisiología</strong>
+              <span>↓</span>
+            </div>
+            <div class="sketch-pillar-node">
+              <strong>Enfoque</strong>
+              <span>↓</span>
+            </div>
+            <div class="sketch-pillar-node">
+              <strong>Lenguaje</strong>
+              <span>↓</span>
+            </div>
+          </div>
+
+          <div class="discipline-badge">
+            <span>🔥 DISCIPLINA = HÁBITOS QUE TE HACEN FELIZ 🔥</span>
+          </div>
+
+          <div class="daily-mission-counter">
+            Misiones de hoy: <strong id="total-checks-done-label">0 de 18</strong> completadas
+          </div>
+        </article>
+
+        <!-- SUPERIOR DERECHA: PILA DIARIA DE FELICIDAD (SEMÁFORO R-R-R-A-A-A-V-V-V) -->
+        <article class="card happiness-battery-card">
+          <div class="card-header-row">
+            <div>
+              <span id="battery-status-pill" class="pill-tag tag-red">🔴 ¡PON CUIDADO!</span>
+              <h2>Pila Diaria de Felicidad</h2>
+            </div>
+            <div class="battery-percent-big" id="battery-percent-text">0%</div>
+          </div>
+
+          <div class="battery-wrapper" aria-label="Pila diaria de felicidad">
+            <div class="battery-body" id="battery-cells-container">
+              <div class="battery-cell cell-r" data-index="1"><span>R</span></div>
+              <div class="battery-cell cell-r" data-index="2"><span>R</span></div>
+              <div class="battery-cell cell-r" data-index="3"><span>R</span></div>
+              <div class="battery-cell cell-a" data-index="4"><span>A</span></div>
+              <div class="battery-cell cell-a" data-index="5"><span>A</span></div>
+              <div class="battery-cell cell-a" data-index="6"><span>A</span></div>
+              <div class="battery-cell cell-v" data-index="7"><span>V</span></div>
+              <div class="battery-cell cell-v" data-index="8"><span>V</span></div>
+              <div class="battery-cell cell-v" data-index="9"><span>V</span></div>
+            </div>
+            <div class="battery-cap"></div>
+          </div>
+
+          <div class="semaforo-legend">
+            <span class="leg-item"><i class="dot dot-red"></i> Rojo: ¡Pon cuidado!</span>
+            <span class="leg-item"><i class="dot dot-yellow"></i> Amarillo: A la mitad</span>
+            <span class="leg-item"><i class="dot dot-green"></i> Verde: ¡Muy llena!</span>
+          </div>
+
+          <div class="battery-breakdown">
+            <div class="breakdown-row">
+              <span>💪 Fisiología</span>
+              <div class="mini-bar"><div id="bar-fisiologia" class="mini-fill" style="width: 0%"></div></div>
+              <strong id="score-fisiologia">0/5</strong>
+            </div>
+            <div class="breakdown-row">
+              <span>🎯 Enfoque</span>
+              <div class="mini-bar"><div id="bar-enfoque" class="mini-fill" style="width: 0%"></div></div>
+              <strong id="score-enfoque">0/6</strong>
+            </div>
+            <div class="breakdown-row">
+              <span>💬 Lenguaje</span>
+              <div class="mini-bar"><div id="bar-lenguaje" class="mini-fill" style="width: 0%"></div></div>
+              <strong id="score-lenguaje">0/7</strong>
+            </div>
+          </div>
+
+          <div class="reminder-config-box">
+            <label class="reminder-toggle-label">
+              <input type="checkbox" id="toggle-battery-reminder" checked />
+              <span>Avisarme si mi Pila baja</span>
+            </label>
+            <select id="reminder-time-select" aria-label="Frecuencia de recordatorio">
+              <option value="midday">Medio día y tarde</option>
+              <option value="2h">Cada 2 horas</option>
+              <option value="night">Antes de dormir</option>
+            </select>
+          </div>
+        </article>
+      </div>
+
+      <!-- ====================================================
+           INTERRUPTOR DE MODO: 3 PILARES vs RUTINA POR HORARIOS
+           ==================================================== -->
+      <div class="view-mode-switcher-bar card" style="margin-bottom: 1.25rem; padding: 0.9rem 1.2rem; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.8rem;">
+        <div>
+          <strong style="font-size: 1rem; display: block;">🧭 ¿Cómo quieres jugar tu día hoy?</strong>
+          <small style="opacity: 0.8;">Alterna entre la vista por 3 Pilares o el paso a paso cronológico de la mañana a la noche.</small>
+        </div>
+        <div class="mode-toggle-pills" role="group" aria-label="Modo de visualización de misiones" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+          <button type="button" class="mode-switch-btn active" data-viewmode="pillars">
+            🏛️ Vista por 3 Pilares
+          </button>
+          <button type="button" class="mode-switch-btn" data-viewmode="schedule">
+            ⏰ Paso a Paso del Día (Mañana / Día / Tarde / Noche)
+          </button>
+        </div>
+      </div>
+
+      <!-- ====================================================
+           NUEVA VISTA CRONOLÓGICA: EL DÍA PERFECTO EN 4 BLOQUES
+           ==================================================== -->
+      <div id="schedule-four-blocks" class="schedule-four-grid hidden">
+
+        <!-- BLOQUE 1: MAÑANA / AL DESPERTAR -->
+        <section class="card schedule-card schedule-morning">
+          <div class="pillar-header">
+            <div class="pillar-top-meta">
+              <span class="pillar-number">BLOQUE 1 • PRIMEROS 10 MIN</span>
+              <span class="pillar-progress-pill" id="sched-prog-morning">0/5 listos</span>
+            </div>
+            <h2 class="pillar-title">🌅 Al Despertar</h2>
+            <p class="pillar-subtitle">Enciende tu Avatar y cambia tu química cerebral antes de ver el celular.</p>
+          </div>
+
+          <div class="pillar-block">
+            <label class="check-item-label">
+              <input type="checkbox" class="sync-habit7-check" data-target-h="1" />
+              <span class="check-text"><strong>1. Presentación de Identidad (Hábito #1):</strong> Mirarte al espejo y decir: <em>"Soy [Nombre] y empiezo mi nueva vida"</em>.</span>
+            </label>
+          </div>
+
+          <div class="pillar-block">
+            <label class="check-item-label">
+              <input type="checkbox" class="sync-pillar-check" data-target-id="fis_postura" />
+              <span class="check-text"><strong>2. Posición de Poder (2 min):</strong> Pecho orgulloso, hombros atrás y mirada arriba <em class="xp-tag">+25 XP</em></span>
+            </label>
+          </div>
+
+          <div class="pillar-block">
+            <label class="check-item-label">
+              <input type="checkbox" class="sync-pillar-check" data-target-id="len_gratitud" />
+              <span class="check-text"><strong>3. Manifestación y Gratitud Matutina:</strong> Declarar tu intención del día al despertar y agradecer de corazón <em class="xp-tag">+25 XP</em></span>
+            </label>
+          </div>
+
+          <div class="pillar-block">
+            <label class="check-item-label">
+              <input type="checkbox" class="sync-pillar-check" data-target-id="enf_foto_paciencia" />
+              <span class="check-text"><strong>4. Espejo del Futuro + Paciencia (30s):</strong> Observar tu foto compromiso y visualizar tu meta sin prisa <em class="xp-tag">+25 XP</em></span>
+            </label>
+          </div>
+
+          <div class="pillar-block">
+            <label class="check-item-label">
+              <input type="checkbox" class="sync-pillar-check" data-target-id="enf_impulso" />
+              <span class="check-text"><strong>5. Definir tu Mínimo No Negociable (Impulso):</strong> Elegir tu paso de bebé de hoy y su hora exacta <em class="xp-tag">+25 XP</em></span>
+            </label>
+          </div>
+        </section>
+
+        <!-- BLOQUE 2: DURANTE EL DÍA -->
+        <section class="card schedule-card schedule-day">
+          <div class="pillar-header">
+            <div class="pillar-top-meta">
+              <span class="pillar-number">BLOQUE 2 • COMBATE DIARIO</span>
+              <span class="pillar-progress-pill" id="sched-prog-day">0/4 listos</span>
+            </div>
+            <h2 class="pillar-title">☀️ Durante el Día</h2>
+            <p class="pillar-subtitle">Derrota al Monstruo del Azúcar con las 2 Reglas de Oro y suma movimiento natural.</p>
+          </div>
+
+          <div class="pillar-block">
+            <label class="check-item-label">
+              <input type="checkbox" class="sync-pillar-check" data-target-id="len_alimentos" />
+              <span class="check-text"><strong>6. Las 2 Reglas de Oro de Alimentación:</strong> CERO azúcar y CERO ultraprocesados hoy <em class="xp-tag">+25 XP</em></span>
+            </label>
+          </div>
+
+          <div class="pillar-block">
+            <label class="check-item-label">
+              <input type="checkbox" class="sync-pillar-check" data-target-id="fis_neat" />
+              <span class="check-text"><strong>7. NEAT Diario (Escaleras + Pasos):</strong> Subir escaleras y avanzar hacia tu escalón (3K / 5K / 10K) <em class="xp-tag">+25 XP</em></span>
+            </label>
+          </div>
+
+          <div class="pillar-block">
+            <label class="check-item-label">
+              <input type="checkbox" class="sync-pillar-check" data-target-id="len_meditar" />
+              <span class="check-text"><strong>8. Pausa de Meditación (1 min):</strong> Hacer 5 ciclos de respiración consciente (4s-4s-4s) para calmar ansiedad <em class="xp-tag">+25 XP</em></span>
+            </label>
+          </div>
+
+          <div class="pillar-block">
+            <label class="check-item-label">
+              <input type="checkbox" class="sync-pillar-check" data-target-id="enf_objetivos" />
+              <span class="check-text"><strong>9. Actualizar Objetivos Desbloqueables:</strong> Revisar tu avance semanal y mantener actitud positiva <em class="xp-tag">+25 XP</em></span>
+            </label>
+          </div>
+        </section>
+
+        <!-- BLOQUE 3: TARDE Y COMUNIDAD -->
+        <section class="card schedule-card schedule-afternoon">
+          <div class="pillar-header">
+            <div class="pillar-top-meta">
+              <span class="pillar-number">BLOQUE 3 • ENERGÍA Y TRIBU</span>
+              <span class="pillar-progress-pill" id="sched-prog-afternoon">0/5 listos</span>
+            </div>
+            <h2 class="pillar-title">⚡ Tarde & Comunidad</h2>
+            <p class="pillar-subtitle">Activa tu cuerpo, conecta con la tribu y suelta cargas emocionales.</p>
+          </div>
+
+          <div class="pillar-block">
+            <label class="check-item-label">
+              <input type="checkbox" class="sync-pillar-check" data-target-id="fis_rutina_yt" />
+              <span class="check-text"><strong>10. Live Diario TikTok / YouTube Mr. Muévase:</strong> Entrenar en comunidad o seguir tu rutina del canal <em class="xp-tag">+25 XP</em></span>
+            </label>
+          </div>
+
+          <div class="pillar-block">
+            <label class="check-item-label">
+              <input type="checkbox" class="sync-pillar-check" data-target-id="fis_movimiento" />
+              <span class="check-text"><strong>11. Movimiento que Disfruto:</strong> Caminar, bailar, nadar o cualquier actividad que te dé alegría <em class="xp-tag">+25 XP</em></span>
+            </label>
+          </div>
+
+          <div class="pillar-block">
+            <label class="check-item-label">
+              <input type="checkbox" class="sync-pillar-check" data-target-id="fis_extra" />
+              <span class="check-text"><strong>12. Extra que me hace sentir bien:</strong> Tomar el sol, estirarte o bailar tu canción favorita <em class="xp-tag">+25 XP</em></span>
+            </label>
+          </div>
+
+          <div class="pillar-block">
+            <label class="check-item-label">
+              <input type="checkbox" class="sync-pillar-check" data-target-id="len_habitos_felicidad" />
+              <span class="check-text"><strong>13. Hábito de Felicidad + Amor Propio:</strong> Dar un abrazo de 20s, decir "Te amo" o hablarte con cariño <em class="xp-tag">+25 XP</em></span>
+            </label>
+          </div>
+
+          <div class="pillar-block">
+            <label class="check-item-label">
+              <input type="checkbox" class="sync-pillar-check" data-target-id="enf_terminacion" />
+              <span class="check-text"><strong>14. Cerrar un Pendiente (Terminación):</strong> Perdonar, hacer esa llamada pendiente o cerrar un asunto para avanzar ligero <em class="xp-tag">+25 XP</em></span>
+            </label>
+          </div>
+        </section>
+
+        <!-- BLOQUE 4: NOCHE / ANTES DE DORMIR -->
+        <section class="card schedule-card schedule-night">
+          <div class="pillar-header">
+            <div class="pillar-top-meta">
+              <span class="pillar-number">BLOQUE 4 • CIERRE DE PARTIDA</span>
+              <span class="pillar-progress-pill" id="sched-prog-night">0/5 listos</span>
+            </div>
+            <h2 class="pillar-title">🌙 Antes de Dormir</h2>
+            <p class="pillar-subtitle">Cierra el día en victoria, recarga tu Pila y prepara un descanso reparador.</p>
+          </div>
+
+          <div class="pillar-block">
+            <label class="check-item-label">
+              <input type="checkbox" class="sync-pillar-check" data-target-id="enf_reflexion" />
+              <span class="check-text"><strong>15. Hoja Final del Día (Anti To-Do List):</strong> Escribir lo que SÍ hiciste bien hoy y 1 nota para mejorar <em class="xp-tag">+25 XP</em></span>
+            </label>
+          </div>
+
+          <div class="pillar-block">
+            <label class="check-item-label">
+              <input type="checkbox" class="sync-pillar-check" data-target-id="enf_celebracion" />
+              <span class="check-text"><strong>16. Celebración de Victoria 🌟:</strong> Sorprenderte haciendo algo bien hoy y celebrarlo <em class="xp-tag">+25 XP</em></span>
+            </label>
+          </div>
+
+          <div class="pillar-block">
+            <label class="check-item-label">
+              <input type="checkbox" class="sync-pillar-check" data-target-id="len_amor" />
+              <span class="check-text"><strong>17. Vivir desde el Amor e Integridad:</strong> Reconocer cómo cumpliste tu palabra contigo mismo hoy <em class="xp-tag">+25 XP</em></span>
+            </label>
+          </div>
+
+          <div class="pillar-block">
+            <label class="check-item-label">
+              <input type="checkbox" class="sync-pillar-check" data-target-id="len_manifestar" />
+              <span class="check-text"><strong>18. Manifestación Nocturna:</strong> Agradecer al Universo antes de acostarte y visualizar tu mañana <em class="xp-tag">+25 XP</em></span>
+            </label>
+          </div>
+
+          <div class="pillar-block">
+            <label class="check-item-label">
+              <input type="checkbox" class="sync-pillar-check" data-target-id="len_sueno" />
+              <span class="check-text"><strong>19. Registrar Sueño y Descanso:</strong> Asegurar 7 a 8 horas de descanso reparador para perder peso <em class="xp-tag">+25 XP</em></span>
+            </label>
+          </div>
+        </section>
+
+      </div>
+
+      <!-- SELECTOR DE VISTA EN MÓVIL PARA LOS 3 PILARES -->
+      <div class="mobile-pillars-switcher">
+        <button type="button" class="pillar-switch-btn active" data-pillar="all">Ver 3 Pilares</button>
+        <button type="button" class="pillar-switch-btn" data-pillar="fisiologia">1. Fisiología</button>
+        <button type="button" class="pillar-switch-btn" data-pillar="enfoque">2. Enfoque</button>
+        <button type="button" class="pillar-switch-btn" data-pillar="lenguaje">3. Lenguaje</button>
+      </div>
+
+      <!-- ====================================================
+           PARTE INFERIOR DEL BOCETO: LOS 3 GRANDES PILARES
+           ==================================================== -->
+      <div class="pillars-three-columns">
+
+        <!-- ==================================================
+             PILAR 1: FISIOLOGÍA
+             ================================================== -->
+        <section class="card pillar-card pillar-fisiologia" id="pillar-fisiologia">
+          <div class="pillar-header">
+            <div class="pillar-top-meta">
+              <span class="pillar-number">PILAR 1 • +25 XP POR MISIÓN</span>
+              <span class="pillar-progress-pill" id="pill-prog-fis">0/5 listos</span>
+            </div>
+            <h2 class="pillar-title">💪 FISIOLOGÍA</h2>
+            <p class="pillar-subtitle">
+              Rompe el patrón de cabeza baja y hombros caídos. ¡Cambia tu postura: pecho orgulloso, posiciones de poder y movimiento diario!
+            </p>
+          </div>
+
+          <!-- 1.1 Posición de Poder -->
+          <div class="pillar-block">
+            <div class="block-title-row">
+              <label class="check-item-label">
+                <input type="checkbox" class="pillar-check" data-pillar="fisiologia" data-id="fis_postura" />
+                <span class="check-text"><strong>Posición de Poder</strong> (Pecho orgulloso, hombros atrás, mirada arriba) <em class="xp-tag">+25 XP</em></span>
+              </label>
+            </div>
+            <div class="power-pose-widget">
+              <p class="widget-note">2 minutos en posición de poder cambian tu química cerebral y te llenan de seguridad.</p>
+              <button type="button" id="btn-power-pose-timer" class="btn-secondary-sm">
+                🦸‍♂️ Iniciar 2 Min de Posición de Poder (<span id="power-pose-time">02:00</span>)
+              </button>
+            </div>
+          </div>
+
+          <!-- 1.2 Rutinas YouTube y Movimiento -->
+          <div class="pillar-block">
+            <label class="check-item-label">
+              <input type="checkbox" class="pillar-check" data-pillar="fisiologia" data-id="fis_rutina_yt" />
+              <span class="check-text"><strong>Rutinas YouTube / En Vivo Diario TikTok</strong> (Comunidad Mr. Muévase) <em class="xp-tag">+25 XP</em></span>
+            </label>
+            <p class="widget-note">¿No sabes qué hacer hoy? Entra al canal o únete al Live diario para movernos juntos:</p>
+            <div class="channel-links-row">
+              <a href="https://www.youtube.com/@Mr_Mu%C3%A9vase" target="_blank" rel="noopener noreferrer" class="channel-btn yt-btn">
+                ▶️ YouTube @Mr_Muévase
+              </a>
+              <a href="https://www.tiktok.com/@mr_muevase?_t=ZS-900v4MIYkdO&_r=1" target="_blank" rel="noopener noreferrer" class="channel-btn tt-btn">
+                📱 TikTok Live @mr_muevase
+              </a>
+            </div>
+          </div>
+
+          <div class="pillar-block">
+            <label class="check-item-label">
+              <input type="checkbox" class="pillar-check" data-pillar="fisiologia" data-id="fis_movimiento" />
+              <span class="check-text"><strong>Movimiento que disfruto</strong> (¡El ejercicio que te guste!) <em class="xp-tag">+25 XP</em></span>
+            </label>
+            <input type="text" id="input-fis-ejercicio" class="input-compact" placeholder="¿Qué movimiento hiciste hoy? (Ej. Caminata, baile, rutina adaptada, nadar)" />
+          </div>
+
+          <!-- 1.3 NEAT: Escaleras, Pasos (3K, 5K, 10K) -->
+          <div class="pillar-block neat-block">
+            <div class="neat-header">
+              <label class="check-item-label">
+                <input type="checkbox" class="pillar-check" data-pillar="fisiologia" data-id="fis_neat" />
+                <span class="check-text"><strong>NEAT Diario</strong> (Subir escaleras + Meta de Pasos) <em class="xp-tag">+25 XP</em></span>
+              </label>
+            </div>
+
+            <div class="steps-configurator">
+              <div class="steps-goal-row">
+                <span>Mi escalón de pasos actual:</span>
+                <div class="step-goal-pills" role="group" aria-label="Meta de pasos diarios">
+                  <button type="button" class="step-pill active" data-goal="3000">3K</button>
+                  <button type="button" class="step-pill" data-goal="5000">5K</button>
+                  <button type="button" class="step-pill" data-goal="10000">10K</button>
+                  <button type="button" class="step-pill" data-goal="custom">Modificar</button>
+                </div>
+              </div>
+
+              <div class="steps-progress-box">
+                <div class="steps-numbers">
+                  <strong id="current-steps-label">0</strong> / <span id="goal-steps-label">3,000</span> pasos hoy
+                </div>
+                <input type="range" id="steps-slider" min="0" max="3000" step="100" value="0" />
+                <div class="steps-quick-btns">
+                  <button type="button" class="btn-chip" data-add-steps="500">+500 pasos</button>
+                  <button type="button" class="btn-chip" data-add-steps="1000">+1,000 pasos</button>
+                  <button type="button" class="btn-chip" id="btn-add-stairs">🪜 Subí escaleras (<span id="stairs-count">0</span>)</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 1.4 Extra que te hace sentir bien -->
+          <div class="pillar-block extra-feelgood-block">
+            <label class="check-item-label">
+              <input type="checkbox" class="pillar-check" data-pillar="fisiologia" data-id="fis_extra" />
+              <span class="check-text"><strong>⭐ Extra que me hace sentir bien hoy</strong> <em class="xp-tag">+25 XP</em></span>
+            </label>
+            <input type="text" id="input-fis-extra" class="input-compact" placeholder="Ej. Estirarme al despertar, salir a tomar sol, bailar 1 canción..." />
+          </div>
+
+          <div class="pillar-footer-check">
+            <button type="button" class="btn-pillar-master-check" data-master-pillar="fisiologia">
+              ☑️ COMPLETAR COMBO FISIOLOGÍA — Alimentar Pila
+            </button>
+          </div>
+        </section>
+
+        <!-- ==================================================
+             PILAR 2: ENFOQUE
+             ================================================== -->
+        <section class="card pillar-card pillar-enfoque" id="pillar-enfoque">
+          <div class="pillar-header">
+            <div class="pillar-top-meta">
+              <span class="pillar-number">PILAR 2 • +25 XP POR MISIÓN</span>
+              <span class="pillar-progress-pill" id="pill-prog-enf">0/6 listos</span>
+            </div>
+            <h2 class="pillar-title">🎯 ENFOQUE</h2>
+            <p class="pillar-subtitle">
+              Esta carrera es para siempre. Avanzamos con <strong>pasos de bebé</strong> y <strong>paciencia</strong> para que el cambio sea sostenible toda la vida.
+            </p>
+          </div>
+
+          <!-- 2.1 Objetivos Desbloqueables -->
+          <div class="pillar-block">
+            <div class="block-title-row">
+              <label class="check-item-label">
+                <input type="checkbox" class="pillar-check" data-pillar="enfoque" data-id="enf_objetivos" />
+                <span class="check-text"><strong>Mis Objetivos de Vida Desbloqueables</strong> (% de Avance) <em class="xp-tag">+25 XP</em></span>
+              </label>
+            </div>
+            <p class="widget-note">Actualiza tu barra de progreso. Cuando llega a 100%, ¡desbloqueas un cofre de nivel!</p>
+
+            <div class="goals-list" id="goals-list-container">
+              <div class="goal-item">
+                <div class="goal-top">
+                  <span class="goal-badge short">🌱 Corto Plazo (Pasos de bebé — Esta semana)</span>
+                  <strong class="goal-pct-label" id="pct-label-short">40%</strong>
+                </div>
+                <input type="text" id="goal-text-short" class="input-compact" value="Caminar 3,000 pasos diarios y cero refrescos esta semana" />
+                <input type="range" id="goal-range-short" class="goal-slider" min="0" max="100" step="5" value="40" />
+              </div>
+
+              <div class="goal-item">
+                <div class="goal-top">
+                  <span class="goal-badge medium">🚀 Mediano Plazo (3 a 6 meses)</span>
+                  <strong class="goal-pct-label" id="pct-label-medium">25%</strong>
+                </div>
+                <input type="text" id="goal-text-medium" class="input-compact" value="Bajar mis primeros 12 kg y dominar los 5,000 pasos sin fatiga" />
+                <input type="range" id="goal-range-medium" class="goal-slider" min="0" max="100" step="5" value="25" />
+              </div>
+
+              <div class="goal-item">
+                <div class="goal-top">
+                  <span class="goal-badge long">👑 Largo Plazo (Para siempre)</span>
+                  <strong class="goal-pct-label" id="pct-label-long">15%</strong>
+                </div>
+                <input type="text" id="goal-text-long" class="input-compact" value="Vivir en mi peso saludable como en mi Espejo del Futuro, pleno y feliz" />
+                <input type="range" id="goal-range-long" class="goal-slider" min="0" max="100" step="5" value="15" />
+              </div>
+            </div>
+          </div>
+
+          <!-- 2.2 Anclaje en la Foto + Paciencia -->
+          <div class="pillar-block patience-anchor-block">
+            <label class="check-item-label">
+              <input type="checkbox" class="pillar-check" data-pillar="enfoque" data-id="enf_foto_paciencia" />
+              <span class="check-text"><strong>Apoyarme de mi Espejo del Futuro + Cultivar la Paciencia</strong> <em class="xp-tag">+25 XP</em></span>
+            </label>
+            <div class="patience-reminder-pill">
+              ⏳ <em>“No subí de peso en un día y no necesito bajarlo en un día. Hoy elijo la paciencia: 1% mejor hoy es victoria total.”</em>
+            </div>
+          </div>
+
+          <!-- 2.3 LAS 4 LLAVES MAESTRAS DEL ENFOQUE -->
+          <div class="pillar-block four-keys-block">
+            <h3 class="sub-heading">🔑 Las 4 Llaves Maestras del Cierre y Avance</h3>
+            <p class="widget-note">Toca cada llave para completar tu ejercicio práctico del día:</p>
+
+            <div class="keys-tabs-header">
+              <button type="button" class="key-tab-btn active" data-keytab="impulso">1. Impulso</button>
+              <button type="button" class="key-tab-btn" data-keytab="terminacion">2. Terminación</button>
+              <button type="button" class="key-tab-btn" data-keytab="reflexion">3. Reflexión</button>
+              <button type="button" class="key-tab-btn" data-keytab="celebracion">4. Celebración</button>
+            </div>
+
+            <!-- LLAVE 1: IMPULSO -->
+            <div class="key-panel active" id="keypanel-impulso">
+              <div class="key-panel-header">
+                <label class="check-item-label">
+                  <input type="checkbox" class="pillar-check" data-pillar="enfoque" data-id="enf_impulso" />
+                  <span class="check-text"><strong>Llave 1 — IMPULSO:</strong> Ser constante y hacerlo estable <em class="xp-tag">+25 XP</em></span>
+                </label>
+              </div>
+              <p class="key-guide-text">
+                El impulso nace de cumplirte una acción tan sencilla cada día que tu mente se acostumbra a ganar. ¿Cuál es tu <strong>Mínimo No Negociable</strong> de hoy?
+              </p>
+              <input type="text" id="input-enf-impulso-minimo" class="input-compact" placeholder="Ej. Caminar 15 minutos y tomar solo agua natural hoy." />
+              <div class="impulse-days-tracker">
+                <span>Estabilidad de tu semana:</span>
+                <div class="week-dots" id="impulse-week-dots">
+                  <button type="button" class="day-dot active" data-day="L">L</button>
+                  <button type="button" class="day-dot" data-day="M">M</button>
+                  <button type="button" class="day-dot" data-day="X">M</button>
+                  <button type="button" class="day-dot" data-day="J">J</button>
+                  <button type="button" class="day-dot" data-day="V">V</button>
+                  <button type="button" class="day-dot" data-day="S">S</button>
+                  <button type="button" class="day-dot" data-day="D">D</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- LLAVE 2: TERMINACIÓN -->
+            <div class="key-panel hidden" id="keypanel-terminacion">
+              <div class="key-panel-header">
+                <label class="check-item-label">
+                  <input type="checkbox" class="pillar-check" data-pillar="enfoque" data-id="enf_terminacion" />
+                  <span class="check-text"><strong>Llave 2 — TERMINACIÓN:</strong> Liberarte de pendientes para avanzar ligero <em class="xp-tag">+25 XP</em></span>
+                </label>
+              </div>
+              <p class="key-guide-text">
+                Termina problemas o cosas pendientes (hablarle a ese amigo, perdonar a esa persona, liberarte) para avanzar ligero y sin ansiedad:
+              </p>
+              <select id="select-terminacion-type" class="input-compact" style="margin-bottom:0.4rem">
+                <option value="Perdonar y soltar">🕊️ Perdonar a una persona y soltar esa carga</option>
+                <option value="Hablar con un amigo/familiar">📞 Hablarle a ese amigo o familiar pendiente</option>
+                <option value="Cerrar un problema pendiente">✅ Terminar un asunto o pendiente que postergaba</option>
+              </select>
+              <input type="text" id="input-enf-terminacion" class="input-compact" placeholder="Escribe qué pendiente cierras o sueltas hoy..." />
+              <button type="button" id="btn-release-burden" class="btn-secondary-sm" style="margin-top:0.5rem;width:100%">
+                🕊️ Declarar Terminado y Avanzar Ligero (+25 XP)
+              </button>
+              <div id="released-burdens-list" class="mini-tags-list"></div>
+            </div>
+
+            <!-- LLAVE 3: REFLEXIÓN -->
+            <div class="key-panel hidden" id="keypanel-reflexion">
+              <div class="key-panel-header">
+                <label class="check-item-label">
+                  <input type="checkbox" class="pillar-check" data-pillar="enfoque" data-id="enf_reflexion" />
+                  <span class="check-text"><strong>Llave 3 — REFLEXIÓN (Hoja Final del Día):</strong> Tu Anti To-Do List <em class="xp-tag">+25 XP</em></span>
+                </label>
+              </div>
+              <p class="key-guide-text">
+                En lugar de un To-Do List tradicional, haz tu check al final del día para ver lo bueno que hiciste hoy y preparar tu inventario del fin de semana:
+              </p>
+              <label class="micro-label">1. ¿Qué hice hoy que me ayudó a mis objetivos?</label>
+              <textarea id="input-enf-reflexion" rows="2" class="textarea-compact" placeholder="Ej. Hoy cumplí mis pasos, comí sin azúcar y mantuve actitud positiva..."></textarea>
+              <label class="micro-label" style="margin-top:0.4rem">2. Nota para mejorar el fin de semana:</label>
+              <input type="text" id="input-enf-reflexion-learning" class="input-compact" placeholder="Ej. Preparar mis alimentos desde la noche anterior." />
+            </div>
+
+            <!-- LLAVE 4: CELEBRACIÓN -->
+            <div class="key-panel hidden" id="keypanel-celebracion">
+              <div class="key-panel-header">
+                <label class="check-item-label">
+                  <input type="checkbox" class="pillar-check" data-pillar="enfoque" data-id="enf_celebracion" />
+                  <span class="check-text"><strong>Llave 4 — CELEBRACIÓN 🌟:</strong> ¡Sorpréndete haciendo algo bien! <em class="xp-tag">+25 XP</em></span>
+                </label>
+              </div>
+              <p class="key-guide-text">
+                Sorpréndete haciendo algo bien hoy y celébralo para que tu cerebro asocie tus nuevos hábitos con placer y orgullo:
+              </p>
+              <input type="text" id="input-enf-celebracion" class="input-compact" placeholder="Ej. ¡Me sorprendí eligiendo agua natural y subiendo las escaleras con gusto!" />
+              <button type="button" id="btn-celebrate-victory" class="btn-celebrate">
+                🎉 ¡Celebrar y Guardar Mi Victoria de Hoy! (+25 XP)
+              </button>
+              <div id="victories-wall-list" class="mini-tags-list"></div>
+            </div>
+          </div>
+
+          <!-- 2.4 LOS 7 HÁBITOS DEL ENFOQUE -->
+          <div class="pillar-block seven-habits-block">
+            <div class="habits-header-row">
+              <h3 class="sub-heading">🔥 Los 7 Hábitos del Enfoque</h3>
+              <span class="habits-progress-counter" id="habits7-counter">1/7 activos hoy</span>
+            </div>
+            <p class="widget-note">Toca cualquier hábito para abrir su ejercicio práctico diario:</p>
+
+            <div class="habits-accordion" id="habits-accordion">
+              <div class="habit-card-item">
+                <div class="habit-card-top">
+                  <label class="habit-check-wrap">
+                    <input type="checkbox" class="habit7-check" data-h="1" checked />
+                    <strong>1. Preséntate (Soy X y empiezo una nueva vida)</strong>
+                  </label>
+                  <button type="button" class="habit-expand-btn" data-expand="1">Ejercicio ▾</button>
+                </div>
+                <div class="habit-card-body" id="habit-body-1">
+                  <p>Preséntate ante ti mismo dejando atrás tus etiquetas pasadas:</p>
+                  <input type="text" id="habit-input-1" class="input-compact" placeholder="Soy [Tu Nombre] y estoy empezando una nueva vida." />
+                </div>
+              </div>
+
+              <div class="habit-card-item">
+                <div class="habit-card-top">
+                  <label class="habit-check-wrap">
+                    <input type="checkbox" class="habit7-check" data-h="2" />
+                    <strong>2. Ser constante</strong>
+                  </label>
+                  <button type="button" class="habit-expand-btn" data-expand="2">Ejercicio ▾</button>
+                </div>
+                <div class="habit-card-body hidden" id="habit-body-2">
+                  <p>¿A qué hora exacta cumplirás tu paso de bebé hoy sin excusas?</p>
+                  <input type="text" id="habit-input-2" class="input-compact" placeholder="Ej. A las 7:00 AM mi Posición de Poder y a las 6:00 PM mis pasos." />
+                </div>
+              </div>
+
+              <div class="habit-card-item">
+                <div class="habit-card-top">
+                  <label class="habit-check-wrap">
+                    <input type="checkbox" class="habit7-check" data-h="3" />
+                    <strong>3. ¡Actitud positiva (+) !</strong>
+                  </label>
+                  <button type="button" class="habit-expand-btn" data-expand="3">Ejercicio ▾</button>
+                </div>
+                <div class="habit-card-body hidden" id="habit-body-3">
+                  <p>Transforma cualquier queja de hoy en agradecimiento y energía:</p>
+                  <input type="text" id="habit-input-3" class="input-compact" placeholder="Hoy elijo ver lo bueno y sonreír ante los retos." />
+                </div>
+              </div>
+
+              <div class="habit-card-item">
+                <div class="habit-card-top">
+                  <label class="habit-check-wrap">
+                    <input type="checkbox" class="habit7-check" data-h="4" />
+                    <strong>4. ¡Comprométete a largo plazo!</strong>
+                  </label>
+                  <button type="button" class="habit-expand-btn" data-expand="4">Ejercicio ▾</button>
+                </div>
+                <div class="habit-card-body hidden" id="habit-body-4">
+                  <p>Recuerda que esta carrera es para siempre, no una dieta temporal:</p>
+                  <input type="text" id="habit-input-4" class="input-compact" placeholder="Mi compromiso con mi salud es para toda la vida." />
+                </div>
+              </div>
+
+              <div class="habit-card-item">
+                <div class="habit-card-top">
+                  <label class="habit-check-wrap">
+                    <input type="checkbox" class="habit7-check" data-h="5" />
+                    <strong>5. Cultivar un deseo ardiente respaldado por la FE</strong>
+                  </label>
+                  <button type="button" class="habit-expand-btn" data-expand="5">Ejercicio ▾</button>
+                </div>
+                <div class="habit-card-body hidden" id="habit-body-5">
+                  <p>¿Cuál es tu motor profundo y por qué tienes FE total en que lo lograrás?</p>
+                  <input type="text" id="habit-input-5" class="input-compact" placeholder="Mi deseo ardiente es vivir sano y feliz, y tengo Fe absoluta." />
+                </div>
+              </div>
+
+              <div class="habit-card-item">
+                <div class="habit-card-top">
+                  <label class="habit-check-wrap">
+                    <input type="checkbox" class="habit7-check" data-h="6" />
+                    <strong>6. Estar dispuesto a pagar el precio</strong>
+                  </label>
+                  <button type="button" class="habit-expand-btn" data-expand="6">Ejercicio ▾</button>
+                </div>
+                <div class="habit-card-body hidden" id="habit-body-6">
+                  <p>¿Qué comodidad o tentación eliges soltar hoy con alegría por tu meta?</p>
+                  <input type="text" id="habit-input-6" class="input-compact" placeholder="Ej. Hoy pago el precio de dejar el azúcar y moverme 30 min." />
+                </div>
+              </div>
+
+              <div class="habit-card-item">
+                <div class="habit-card-top">
+                  <label class="habit-check-wrap">
+                    <input type="checkbox" class="habit7-check" data-h="7" />
+                    <strong>7. INTEGRIDAD</strong>
+                  </label>
+                  <button type="button" class="habit-expand-btn" data-expand="7">Ejercicio ▾</button>
+                </div>
+                <div class="habit-card-body hidden" id="habit-body-7">
+                  <p>Hacer lo correcto para tu cuerpo incluso cuando nadie te está viendo:</p>
+                  <input type="text" id="habit-input-7" class="input-compact" placeholder="Hoy cumplo la palabra que me di a mí mismo." />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="pillar-footer-check">
+            <button type="button" class="btn-pillar-master-check" data-master-pillar="enfoque">
+              ☑️ COMPLETAR COMBO ENFOQUE — Alimentar Pila
+            </button>
+          </div>
+        </section>
+
+        <!-- ==================================================
+             PILAR 3: LENGUAJE
+             ================================================== -->
+        <section class="card pillar-card pillar-lenguaje" id="pillar-lenguaje">
+          <div class="pillar-header">
+            <div class="pillar-top-meta">
+              <span class="pillar-number">PILAR 3 • +25 XP POR MISIÓN</span>
+              <span class="pillar-progress-pill" id="pill-prog-len">0/7 listos</span>
+            </div>
+            <h2 class="pillar-title">💬 LENGUAJE</h2>
+            <p class="pillar-subtitle">
+              Empezar desde el amor a nosotros mismos: cómo nos hablamos, qué comemos, qué manifestamos y cómo descansamos.
+            </p>
+          </div>
+
+          <!-- 3.1 Meditar [check] -->
+          <div class="pillar-block">
+            <label class="check-item-label">
+              <input type="checkbox" class="pillar-check" data-pillar="lenguaje" data-id="len_meditar" />
+              <span class="check-text"><strong>1. Meditar</strong> (Calmar la mente y conectar contigo) <em class="xp-tag">+25 XP</em></span>
+            </label>
+            <div class="meditation-box-interactive">
+              <div class="breathe-circle-wrap">
+                <div id="breathe-visual-circle" class="breathe-circle">
+                  <span id="breathe-seconds-num">4s</span>
+                </div>
+                <div class="breathe-info-col">
+                  <strong id="breathe-status">Inhala (4s) • Sostén (4s) • Exhala (4s)</strong>
+                  <small id="breathe-cycle-counter">5 ciclos de respiración consciente (1 min exacto)</small>
+                  <button type="button" id="btn-breathe-guide" class="btn-secondary-sm" style="margin-top:0.35rem">
+                    🧘‍♂️ Iniciar Meditación Guiada (60s)
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3.2 Alimentos [check] -->
+          <div class="pillar-block nutrition-block">
+            <label class="check-item-label">
+              <input type="checkbox" class="pillar-check" data-pillar="lenguaje" data-id="len_alimentos" />
+              <span class="check-text"><strong>2. Alimentación Sana y Sencilla</strong> (Solo 2 Reglas) <em class="xp-tag">+25 XP</em></span>
+            </label>
+            <div class="two-rules-grid">
+              <label class="rule-card">
+                <input type="checkbox" id="rule-no-sugar" />
+                <span>🚫🍬 <strong>NO AZÚCAR</strong> hoy</span>
+              </label>
+              <label class="rule-card">
+                <input type="checkbox" id="rule-no-ultra" />
+                <span>🚫🍟 <strong>NO ULTRAPROCESADOS</strong> hoy</span>
+              </label>
+            </div>
+            <p class="widget-note">Comida real, sencilla y rica. ¡Al marcar ambas reglas recibes tu escudo nutricional!</p>
+          </div>
+
+          <!-- 3.3 Hábitos de Felicidad [check] -->
+          <div class="pillar-block">
+            <label class="check-item-label">
+              <input type="checkbox" class="pillar-check" data-pillar="lenguaje" data-id="len_habitos_felicidad" />
+              <span class="check-text"><strong>3. Hábitos de Felicidad</strong> (Recomendaciones en acción) <em class="xp-tag">+25 XP</em></span>
+            </label>
+            <div class="happiness-habit-suggester">
+              <div class="suggested-habit-box" id="suggested-habit-text">
+                💡 <strong>Recomendación de hoy:</strong> Dile “Te amo” de corazón a alguien importante para ti o dale un abrazo de 20 segundos.
+              </div>
+              <button type="button" id="btn-next-happiness-habit" class="btn-chip">
+                🔄 Otra recomendación de Hábito de Felicidad
+              </button>
+            </div>
+          </div>
+
+          <!-- 3.4 Manifestar [check] -->
+          <div class="pillar-block manifesto-block">
+            <label class="check-item-label">
+              <input type="checkbox" class="pillar-check" data-pillar="lenguaje" data-id="len_manifestar" />
+              <span class="check-text"><strong>4. Manifestar</strong> (Al levantarte y al acostarte, habla con el Universo) <em class="xp-tag">+25 XP</em></span>
+            </label>
+            <p class="widget-note">¿Qué quieres manifestar y atraer para tu vida hoy? Elige el área o combínalas:</p>
+
+            <div class="manifest-topics-pills" id="manifest-topics-pills">
+              <button type="button" class="m-topic-btn active" data-mtopic="poder">⚡ Poder Total</button>
+              <button type="button" class="m-topic-btn" data-mtopic="salud">💪 Salud y Cuerpo</button>
+              <button type="button" class="m-topic-btn" data-mtopic="dinero">💰 Dinero y Abundancia</button>
+              <button type="button" class="m-topic-btn" data-mtopic="pareja">❤️ Pareja y Amor</button>
+              <button type="button" class="m-topic-btn" data-mtopic="exito">🚀 Trabajo y Éxito</button>
+            </div>
+
+            <div class="manifesto-quote-box" id="manifesto-dynamic-quote">
+              “¡Hoy será un día increíble! ¡Siempre me va bien! ¡Soy poderoso, atraigo salud, abundancia y amor a mi vida!”
+            </div>
+
+            <input type="text" id="input-len-manifiesto-custom" class="input-compact" placeholder="Escribe aquí lo que hoy le pides y agradeces al Universo (Salud, dinero, pareja, metas)..." />
+
+            <div class="two-rules-grid">
+              <label class="rule-card">
+                <input type="checkbox" id="manifest-morning" />
+                <span>☀️ Lo declaré al levantarme</span>
+              </label>
+              <label class="rule-card">
+                <input type="checkbox" id="manifest-night" />
+                <span>🌙 Lo declaré al acostarme</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- 3.5 Gratitud [check] -->
+          <div class="pillar-block">
+            <label class="check-item-label">
+              <input type="checkbox" class="pillar-check" data-pillar="lenguaje" data-id="len_gratitud" />
+              <span class="check-text"><strong>5. Vivir siempre desde la Gratitud</strong> <em class="xp-tag">+25 XP</em></span>
+            </label>
+            <input type="text" id="input-len-gratitud" class="input-compact" placeholder="Hoy doy gracias de corazón por..." />
+          </div>
+
+          <!-- 3.6 Amor [check] -->
+          <div class="pillar-block love-block">
+            <label class="check-item-label">
+              <input type="checkbox" class="pillar-check" data-pillar="lenguaje" data-id="len_amor" />
+              <span class="check-text"><strong>6. Vivir desde el Amor</strong> (Amor propio y hacia los demás) <em class="xp-tag">+25 XP</em></span>
+            </label>
+            <p class="widget-note">Nadie cambia su cuerpo odiándolo; lo transformamos amándolo. Elige tu acto de amor de hoy:</p>
+            <select id="select-love-action" class="input-compact">
+              <option value="espejo">🪞 Mirarme al espejo y hablarle a mi cuerpo con respeto, orgullo y ternura</option>
+              <option value="nutrir">🥗 Comer sano hoy como un regalo de amor para mi cuerpo, no como un castigo</option>
+              <option value="paciencia">🤗 Ser compasivo conmigo mismo y aplaudir cada paso de bebé que doy</option>
+              <option value="dar">💝 Expresar cariño, escucha o servicio desinteresado a alguien hoy</option>
+            </select>
+            <input type="text" id="input-len-amor-note" class="input-compact" placeholder="¿Qué frase de amor propio te dices hoy a ti mismo?" />
+          </div>
+
+          <!-- 3.7 Sueño / Descanso [check] -->
+          <div class="pillar-block">
+            <label class="check-item-label">
+              <input type="checkbox" class="pillar-check" data-pillar="lenguaje" data-id="len_sueno" />
+              <span class="check-text"><strong>7. Medir mi Sueño y Descanso</strong> (¡Fundamental para bajar de peso!) <em class="xp-tag">+25 XP</em></span>
+            </label>
+            <div class="sleep-row">
+              <span>Horas dormidas:</span>
+              <input type="number" id="input-sleep-hours" min="1" max="14" step="0.5" value="7.5" class="sleep-input" />
+              <span>hrs</span>
+              <select id="select-sleep-quality" class="sleep-select">
+                <option value="Excelente">😴 Descanso reparador</option>
+                <option value="Bueno">🙂 Buen descanso</option>
+                <option value="Regular">😐 Regular — hoy dormiré antes</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="pillar-footer-check">
+            <button type="button" class="btn-pillar-master-check" data-master-pillar="lenguaje">
+              ☑️ COMPLETAR COMBO LENGUAJE — Alimentar Pila
+            </button>
+          </div>
+        </section>
+
+      </div>
+    </section>
+
+    <!-- ==========================================================
+         NUEVA VISTA 2: MAPA DE MUNDOS, TROFEOS Y TIENDA DE RECOMPENSAS
+         ========================================================== -->
+    <section id="tab-arcade" class="tab-view hidden">
+      <!-- MAPA DEL CAMINO DEL HÉROE MR. MUÉVASE -->
+      <article class="card world-map-card" style="margin-bottom: 1.35rem;">
+        <span class="pill-tag tag-turquoise">🗺️ AVENTURA MR. MUÉVASE</span>
+        <h2>El Camino del Héroe (Mapa de Mundos)</h2>
+        <p class="card-helper">
+          Acumula <strong>Puntos de Experiencia (XP)</strong> cada día cumpliendo tus hábitos para avanzar por los 4 Mundos de Transformación:
+        </p>
+
+        <div class="worlds-trail-grid" id="worlds-trail-grid">
+          <div class="world-node unlocked" data-world="1">
+            <div class="world-icon">🌱</div>
+            <span class="world-num">MUNDO 1 (0+ XP)</span>
+            <h4>Valle del Primer Paso</h4>
+            <p>Romper la inercia, presentarte con tu nueva identidad y lograr tus primeros 3K pasos.</p>
+          </div>
+
+          <div class="world-node" data-world="2">
+            <div class="world-icon">🛡️</div>
+            <span class="world-num">MUNDO 2 (300+ XP)</span>
+            <h4>Fortaleza Cero Azúcar</h4>
+            <p>Dominar las 2 Reglas de Oro (No Azúcar y No Ultraprocesados) y la Posición de Poder.</p>
+          </div>
+
+          <div class="world-node" data-world="3">
+            <div class="world-icon">⚡</div>
+            <span class="world-num">MUNDO 3 (800+ XP)</span>
+            <h4>Templo del Enfoque (5K)</h4>
+            <p>Dominar las 4 Llaves, los 7 Hábitos y mantener tu Pila en Verde con constancia.</p>
+          </div>
+
+          <div class="world-node" data-world="4">
+            <div class="world-icon">👑</div>
+            <span class="world-num">MUNDO 4 (1,500+ XP)</span>
+            <h4>Cumbre Leyenda Mr. Muévase</h4>
+            <p>10K pasos, estilo de vida para siempre e inspirar a toda la comunidad.</p>
+          </div>
+        </div>
+      </article>
+
+      <div class="history-grid">
+        <!-- SALA DE MEDALLAS Y TROFEOS DESBLOQUEABLES -->
+        <article class="card">
+          <span class="pill-tag tag-green">🏅 SALA DE TROFEOS</span>
+          <h2>Mis Medallas Desbloqueadas</h2>
+          <p class="card-helper">
+            Las medallas se iluminan automáticamente cuando cumples las misiones reales en tu día a día:
+          </p>
+          <div class="badges-grid" id="trophies-badges-grid"></div>
+        </article>
+
+        <!-- TIENDA DE RECOMPENSAS DE LA VIDA REAL (CANJE DE MONEDAS 🪙) -->
+        <article class="card">
+          <div class="card-header-row">
+            <div>
+              <span class="pill-tag tag-yellow">🪙 TIENDA DE RECOMPENSAS</span>
+              <h2>Canjea tus Monedas por Premios Reales</h2>
+            </div>
+            <div class="hud-stat-pill coins-pill">🪙 <strong id="shop-coins-balance">50</strong> disponibles</div>
+          </div>
+          <p class="card-helper">
+            Cada check te da <strong>+10 🪙 Monedas Muévase</strong>. ¡Úsalas para premiarte con cosas que nutran tu alma y celebren tu esfuerzo!
+          </p>
+          <div class="shop-items-list" id="shop-items-list"></div>
+        </article>
+      </div>
+    </section>
+
+    <!-- ==========================================================
+         VISTA 3: BLOG & COMUNIDAD MR. MUÉVASE
+         ========================================================== -->
+    <section id="tab-blog" class="tab-view hidden">
+      <div class="blog-header-banner">
+        <div>
+          <span class="pill-tag tag-turquoise">🌎 LA COMUNIDAD MÁS GRANDE DEL MUNDO</span>
+          <h2>Blog de Avances y Comunidad Mr. Muévase</h2>
+          <p>
+            Aquí celebramos cada paso de bebé, cada kilo menos, cada hábito ganado y nos impulsamos juntos. ¡Publicar en el blog te otorga <strong>+50 XP y +25 🪙</strong>!
+          </p>
+        </div>
+        <div class="community-stats-box">
+          <div class="c-stat">
+            <strong>-48 kg</strong>
+            <span>Jesús Sanabria (2026)</span>
+          </div>
+          <div class="c-stat">
+            <strong id="community-posts-count">4</strong>
+            <span>Historias y Avances</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="blog-filter-bar">
+        <button type="button" class="blog-filter-btn active" data-category="all">🌟 Todos los Avances</button>
+        <button type="button" class="blog-filter-btn" data-category="Avance de Peso y Hábitos">🏆 Avances y Testimonios</button>
+        <button type="button" class="blog-filter-btn" data-category="Sin Azúcar / Recetas">🥗 Comida Sencilla & Restaurantes</button>
+        <button type="button" class="blog-filter-btn" data-category="Networking y Apoyo">🤝 Networking & Comunidad</button>
+      </div>
+
+      <div class="blog-layout-grid">
+        <aside class="card blog-composer-card">
+          <h3>✍️ Publicar mi Avance en el Blog (+50 XP)</h3>
+          <p class="card-helper">Tu historia puede darle esperanza hoy a alguien que está empezando su proceso.</p>
+
+          <form id="blog-post-form" class="blog-form">
+            <div class="form-group">
+              <label for="post-title">Título de tu avance o reflexión *</label>
+              <input type="text" id="post-title" required placeholder="Ej. ¡Mi primera semana sin azúcar y 4,000 pasos diarios!" />
+            </div>
+
+            <div class="form-group">
+              <label for="post-category">Categoría en la Comunidad</label>
+              <select id="post-category">
+                <option value="Avance de Peso y Hábitos">🏆 Avance de Peso y Hábitos</option>
+                <option value="Sin Azúcar / Recetas">🥗 Comida Sencilla / Restaurante Recomendado</option>
+                <option value="Networking y Apoyo">🤝 Networking & Apoyo entre Miembros</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="post-milestone">Logro o medalla de hoy (opcional)</label>
+              <input type="text" id="post-milestone" placeholder="Ej. -3 kg este mes | Pila en Verde | 5K pasos" />
+            </div>
+
+            <div class="form-group">
+              <label for="post-content">Comparte tu experiencia con la comunidad *</label>
+              <textarea id="post-content" rows="4" required placeholder="Cuenta cómo te has sentido trabajando tu Fisiología, Enfoque y Lenguaje..."></textarea>
+            </div>
+
+            <div class="form-group">
+              <label for="post-image-input" class="btn-upload">📷 Adjuntar Foto de mi Avance (opcional)</label>
+              <input type="file" id="post-image-input" accept="image/*" class="sr-only" />
+              <div id="post-image-preview-name" class="file-selected-label"></div>
+            </div>
+
+            <button type="submit" class="btn-primary">
+              🚀 Publicar en el Blog (+50 XP)
+            </button>
+          </form>
+        </aside>
+
+        <div class="blog-feed-container" id="blog-feed-list"></div>
+      </div>
+    </section>
+
+    <!-- ==========================================================
+         VISTA 4: INVENTARIO DE FIN DE SEMANA E HISTORIAL
+         ========================================================== -->
+    <section id="tab-history" class="tab-view hidden">
+      <div class="history-grid">
+        <article class="card weekend-inventory-card">
+          <span class="pill-tag tag-turquoise">📅 REFLEXIÓN SEMANAL (+100 XP)</span>
+          <h2>Inventario de Fin de Semana</h2>
+          <p class="card-helper">
+            Revisa tus Hojas Finales del Día (Reflexión) para reconocer todo lo que hiciste bien esta semana y elegir un paso de bebé para mejorar la siguiente.
+          </p>
+
+          <form id="weekend-inventory-form" class="inventory-form">
+            <div class="form-group">
+              <label for="inv-wins">1. ¿Qué cosas hice bien esta semana que me acercaron a mi meta?</label>
+              <textarea id="inv-wins" rows="3" placeholder="Ej. Cumplí mis pasos 5 días, dejé el refresco, hice mi manifiesto cada mañana..."></textarea>
+            </div>
+            <div class="form-group">
+              <label for="inv-improve">2. ¿Qué podemos mejorar con pasos de bebé la próxima semana?</label>
+              <textarea id="inv-improve" rows="3" placeholder="Ej. Dormir 30 minutos más temprano y preparar mi cena sin ultraprocesados..."></textarea>
+            </div>
+            <div class="form-group">
+              <label for="inv-weight-note">3. Avance físico o emocional de esta semana</label>
+              <input type="text" id="inv-weight-note" placeholder="Ej. -1.2 kg esta semana, más energía al subir escaleras y mejor humor" />
+            </div>
+            <button type="submit" class="btn-primary">💾 Guardar Inventario Semanal (+100 XP)</button>
+          </form>
+
+          <div class="saved-inventories-section">
+            <h3 style="margin-top:1.25rem">Mis Inventarios Guardados</h3>
+            <div id="saved-inventories-list" class="inventories-list"></div>
+          </div>
+        </article>
+
+        <article class="card daily-history-card">
+          <span class="pill-tag tag-green">🔋 REGISTRO DE PARTIDAS DIARIAS</span>
+          <h2>Historial de mi Pila de Felicidad</h2>
+          <p class="card-helper">
+            Guarda el cierre de tu día para llevar el registro de cómo tu progreso diario mantiene encendida tu felicidad y suma días a tu racha.
+          </p>
+          <button type="button" id="btn-save-day-snapshot" class="btn-primary" style="margin-bottom: 1rem;">
+            📌 Guardar Partida del Día de Hoy (+1 Día de Racha 🔥 y +50 XP)
+          </button>
+          <div id="daily-snapshots-list" class="snapshots-list"></div>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <!-- PIE DE PÁGINA CON ACCESO DISCRETO EXCLUSIVO PARA JESÚS SANABRIA -->
+  <footer class="app-footer">
+    <span>© 2026 <strong>Mr. Muévase</strong> por Jesús Sanabria • Felicidad = Progreso</span>
+    <button type="button" id="btn-open-leads-db" class="footer-admin-link">
+      🔒 Panel Creador (Base de Datos: <span id="leads-count-badge">1</span>)
+    </button>
+  </footer>
+
+  <!-- MODAL RITUAL DE VISUALIZACIÓN DE 30 SEGUNDOS -->
+  <div id="vision-ritual-modal" class="modal-overlay hidden" role="dialog" aria-modal="true">
+    <div class="modal-card ritual-modal-card">
+      <span class="pill-tag tag-turquoise">✨ RITUAL DE ENFOQUE MR. MUÉVASE</span>
+      <h2>Visualiza a tu Yo del Futuro (30 Segundos)</h2>
+      <p class="card-helper">
+        Respira profundo, mira tu compromiso y siente en tu cuerpo la alegría de haber alcanzado tu meta:
+      </p>
+      <div class="ritual-stage-box">
+        <div class="ritual-timer-circle" id="ritual-timer-display">30s</div>
+        <h3 id="ritual-goal-headline">🎯 Meta: Delgado, Fuerte y Feliz</h3>
+        <p id="ritual-vision-paragraph">
+          “Cierra los ojos unos segundos o mira este espejo: imagínate despertando ligero, lleno de vitalidad, vistiéndote con orgullo y agradeciendo no haberte rendido hoy.”
+        </p>
+      </div>
+      <div class="modal-actions" style="display:flex;gap:0.6rem;margin-top:1rem">
+        <button type="button" id="btn-start-ritual-30s" class="btn-primary">▶️ Iniciar 30 Segundos de Visualización (+30 XP)</button>
+        <button type="button" id="btn-close-ritual-modal" class="btn-secondary-sm">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE BASE DE DATOS DEL CREADOR (JESÚS SANABRIA) -->
+  <div id="leads-db-modal" class="modal-overlay hidden" role="dialog" aria-modal="true">
+    <div class="modal-card modal-wide">
+      <div class="card-header-row">
+        <div>
+          <span class="pill-tag tag-turquoise">📋 PANEL PRIVADO DEL CREADOR (JESÚS SANABRIA)</span>
+          <h2>Base de Datos de Miembros & Envío a Correo / WhatsApp</h2>
+        </div>
+        <button type="button" id="btn-close-leads-modal" class="btn-ghost-sm">✖ Cerrar</button>
+      </div>
+
+      <p class="card-helper">
+        Configura aquí tu <strong>Correo Electrónico</strong> y tu <strong>WhatsApp</strong> para que cada vez que una persona se registre en la app, su información te llegue automáticamente y puedas descargar tu base de datos en <strong>Excel (.CSV)</strong>.
+      </p>
+
+      <div class="admin-config-grid">
+        <div class="form-group">
+          <label for="admin-owner-email">📩 Tu Correo para recibir cada registro nuevo (vía FormSubmit gratis):</label>
+          <input type="email" id="admin-owner-email" placeholder="Ej. jesus@mrmuevase.com" />
+          <small class="micro-help">La primera vez que alguien se registre, FormSubmit te enviará un correo de activación a tu bandeja.</small>
+        </div>
+
+        <div class="form-group">
+          <label for="admin-owner-whatsapp">📱 Tu Número de WhatsApp (con código de país, sin +):</label>
+          <input type="text" id="admin-owner-whatsapp" placeholder="Ej. 5215512345678" />
+          <small class="micro-help">Permite recibir la ficha del nuevo miembro directamente en tu WhatsApp.</small>
+        </div>
+
+        <div class="form-group">
+          <label for="admin-webhook-url">📊 URL de Google Sheets / Webhook (Opcional):</label>
+          <input type="url" id="admin-webhook-url" placeholder="https://script.google.com/macros/s/.../exec" />
+          <small class="micro-help">Conecta una hoja de Google Sheets para guardar millones de registros en la nube.</small>
+        </div>
+      </div>
+
+      <div class="admin-actions-bar">
+        <button type="button" id="btn-save-admin-config" class="btn-primary" style="width:auto">
+          💾 Guardar Mis Datos de Recepción
+        </button>
+        <button type="button" id="btn-export-csv" class="btn-secondary-sm">
+          📥 Descargar Base de Datos en Excel (.CSV)
+        </button>
+        <button type="button" id="btn-send-whatsapp-now" class="btn-secondary-sm">
+          💬 Probar Envío a mi WhatsApp
+        </button>
+      </div>
+
+      <h3 style="margin-top:1.2rem;margin-bottom:0.5rem">Personas Registradas (<span id="table-leads-count">0</span>)</h3>
+      <div class="leads-table-wrapper">
+        <table class="leads-table">
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Nombre</th>
+              <th>Correo</th>
+              <th>Teléfono</th>
+              <th>Perfil</th>
+              <th>Meta</th>
+            </tr>
+          </thead>
+          <tbody id="leads-table-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
